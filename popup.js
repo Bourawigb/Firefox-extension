@@ -1,24 +1,25 @@
 console.log("Popup script loaded.");
-document.getElementById('low').addEventListener('click', () => {
-  setPrivacyLevel('low');
-});
+// popup.js
 
-document.getElementById('medium').addEventListener('click', () => {
-  setPrivacyLevel('medium');
-});
+// popup.js
 
-document.getElementById('high').addEventListener('click', () => {
-  setPrivacyLevel('high');
-});
-
-function setPrivacyLevel(level) {
-browser.runtime.sendMessage({action: 'setPrivacyLevel', level: level}, (response) => {
-  if (response.status === 'success') {
-    console.log('Privacy level set to ' + response.level);
-  } else {
-    console.log('Failed to set privacy level');
-  }
-});
-}
-
+document.addEventListener('DOMContentLoaded', function () {
+  var slider = document.getElementById('entropy-slider');
+  var output = document.getElementById('entropy-value');
   
+  output.innerHTML = 'Entropy Threshold: ' + slider.value;
+
+  // Send the entropy threshold to background.js when slider value changes
+  slider.oninput = function() {
+    output.innerHTML = 'Entropy Threshold: ' + this.value;
+    browser.runtime.sendMessage({setEntropyThreshold: parseFloat(this.value)});
+  }
+
+  // Retrieve the entropy threshold from background.js when popup is opened
+  browser.runtime.sendMessage({getEntropyThreshold: true}).then(response => {
+    if (response && response.threshold) {
+      slider.value = response.threshold;
+      output.innerHTML = 'Entropy Threshold: ' + response.threshold;
+    }
+  });
+});

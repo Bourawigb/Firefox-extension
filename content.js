@@ -1,24 +1,43 @@
-console.log("Content script loaded and running.");
+console.log("Content script loaded successfully!");
 
-// Inject the script into the page after DOMContentLoaded
-document.addEventListener('DOMContentLoaded', () => {
-  const script = document.createElement('script');
-  script.src = browser.runtime.getURL('inject.js');
-  (document.head || document.documentElement).appendChild(script);
-});
+function injectMonitoringScript() {
+    const script = document.createElement('script');
+    script.textContent = `
+        (function() {
+            function reportAccess(attribute) {
+                window.postMessage({ type: 'attributeAccessed', attribute: attribute }, '*');
+            }
 
-// Listen for messages from the injected script
-window.addEventListener('message', async (event) => {
-  if (event.source !== window || !event.data || event.data.type !== 'reportAccess') {
-    return;
-  }
+            function hookProperty(obj, prop, objName) {
+                let originalValue = obj[prop];
 
-  try {
-    const response = await browser.runtime.sendMessage(event.data);
-    if (response && response.block) {
-      window.postMessage({ type: 'blockAccess', property: event.data.property }, '*');
+                Object.defineProperty(obj, prop, {
+                    get: function() {
+                        reportAccess(objName + '.' + prop);
+                        return originalValue;
+                    },
+                    set: function(value) {
+                        originalValue = value;
+                    }
+                });
+            }
+
+            hookProperty(screen, 'width', 'screen');
+            hookProperty(screen, 'height', 'screen');
+            hookProperty(navigator, 'userAgent', 'navigator');
+        })();
+    `;
+    document.documentElement.appendChild(script);
+    script.remove();
+}
+
+injectMonitoringScript();
+
+window.addEventListener('message', function(event) {
+    if (event.source != window) return;
+
+    if (event.data.type && event.data.type === 'attributeAccessed') {
+        console.log('Attribute accessed:', event.data.attribute);
+        browser.runtime.sendMessage({ attributeAccessed: event.data.attribute });
     }
-  } catch (error) {
-    console.error('Error handling message:', error);
-  }
 });
