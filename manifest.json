@@ -32,6 +32,9 @@
       "run_at": "document_start"
     }
   ],
+  "web_accessible_resources": [
+    "Entropy.csv"
+  ],
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
