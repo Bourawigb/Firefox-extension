@@ -81,10 +81,11 @@ function injectMonitoringScript(threshold, entropies) {
                         'Content-Type': 'text/plain'
                     },
                     body: logEntry
-                }).catch(error => {
+                }).catch(error => {                      
                     console.error('Error logging vector:', error);
                 });
             }
+
 
             function reportAccess(attribute, scriptSource) {
                 let allowAccess = false;
@@ -113,7 +114,16 @@ function injectMonitoringScript(threshold, entropies) {
             function hookMethod(obj, method, objName) {
                 const originalMethod = obj[method];
                 obj[method] = function() {
-                    if (reportAccess(objName + '.' + method, window.location.href)) {
+
+                    // Get all script elements
+                    const scripts = document.getElementsByTagName('script');
+                    // Get the last script element (currently executing script)
+                    const currentScript = scripts[scripts.length - 1];
+                    // Log the URL of the currently executing script
+                    if (currentScript.src=""){
+                                    currentScript.src=window.location.href;
+                                }    
+                    if (reportAccess(objName + '.' + method, currentScript.src)) {
                         return originalMethod.apply(this, arguments);
                     } else {
                         console.log('Blocked access to method:', objName + '.' + method);
@@ -125,7 +135,16 @@ function injectMonitoringScript(threshold, entropies) {
                 let originalValue = obj[prop];
                 Object.defineProperty(obj, prop, {
                     get: function() {
-                        if (reportAccess(objName + '.' + prop, window.location.href)) {
+
+                        // Get all script elements
+                        const scripts = document.getElementsByTagName('script');
+                        // Get the last script element (currently executing script)
+                        const currentScript = scripts[scripts.length - 1];
+                        if (currentScript.src=""){
+                                    currentScript.src=window.location.href;
+                                }    
+
+                        if (reportAccess(objName + '.' + prop, currentScript.src)) {
                             return originalValue;
                         } else {
                             console.log('Blocked access to property:', objName + '.' + prop);
@@ -133,7 +152,7 @@ function injectMonitoringScript(threshold, entropies) {
                         }
                     },
                     set: function(value) {
-                        if (reportAccess(objName + '.' + prop, window.location.href)) {
+                        if (reportAccess(objName + '.' + prop, currentScript.src)) {
                             originalValue = value;
                         } else {
                             console.log('Blocked access to property:', objName + '.' + prop);
@@ -148,7 +167,14 @@ function injectMonitoringScript(threshold, entropies) {
                     const originalGetter = descriptor.get;
                     Object.defineProperty(obj, prop, {
                         get: function() {
-                            if (reportAccess(objName + '.' + prop, window.location.href)) {
+                                // Get all script elements
+                                const scripts = document.getElementsByTagName('script');
+                                // Get the last script element (currently executing script)
+                                const currentScript = scripts[scripts.length - 1];
+                                if (currentScript.src=""){
+                                    currentScript.src=window.location.href;
+                                }                        
+                            if (reportAccess(objName + '.' + prop, currentScript.src)) {
                                 return originalGetter.call(this);
                             } else {
                                 console.log('Blocked access to property:', objName + '.' + prop);
