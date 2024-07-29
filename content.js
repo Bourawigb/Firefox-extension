@@ -46,15 +46,14 @@ function injectMonitoringScript(threshold, entropies) {
             console.log("Entropy values:", entropyValues);
             console.log("Entropy threshold:", entropyThreshold);
 
-            function calculateVectorEntropy(attributes) {
+            function calculateVectorEntropy(attributes,script) {
             // Normalize a vector by splitting, trimming, sorting, and joining
             function normalizeVector(vector) {
                 return vector.split('|').map(attr => attr.trim()).sort().join('|');
             }
-
             // Normalize the input attributes
             const normalizedAttributes = normalizeVector(attributes.join('|'));
-
+            let s1=script;
             // Iterate over each key in the entropyValues table
             for (const key in entropyValues) {
                 if (entropyValues.hasOwnProperty(key)) {
@@ -69,12 +68,12 @@ function injectMonitoringScript(threshold, entropies) {
                 }
             }
 
-            // Log the new vector and return the default entropy value for new vectors
-            logNewVector(normalizedAttributes);
+            //if Not, Log the new vector and return the default entropy value for new vectors
+            logNewVector(normalizedAttributes,s1);
             return 0.99;
         }
-            function logNewVector(vector) {
-                const logEntry = vector + '\\n';
+            function logNewVector(vector,script) {
+                const logEntry = vector + ' : '+ script + ' : ' + window.location.href + '\\n';
                 fetch('http://localhost:8000/Logvectors.txt', {
                     method: 'POST',
                     headers: {
@@ -94,9 +93,9 @@ function injectMonitoringScript(threshold, entropies) {
                         attributeAccessData[scriptSource] = new Set();
                     }
                     attributeAccessData[scriptSource].add(attribute);
-
+                    let script = scriptSource;
                     const attributes = Array.from(attributeAccessData[scriptSource]);
-                    const vectorEntropy = calculateVectorEntropy(attributes);
+                    const vectorEntropy = calculateVectorEntropy(attributes,script);
                     console.log('Vector ', attributes.join("|"), ' entropy for', scriptSource, 'is:', vectorEntropy, ' and its:', entropyValues[attributes.join("|")]);
 
                     allowAccess = vectorEntropy <= entropyThreshold;
@@ -120,10 +119,8 @@ function injectMonitoringScript(threshold, entropies) {
                     // Get the last script element (currently executing script)
                     const currentScript = scripts[scripts.length - 1];
                     // Log the URL of the currently executing script
-                    if (currentScript.src=""){
-                                    currentScript.src=window.location.href;
-                                }    
-                    if (reportAccess(objName + '.' + method, currentScript.src)) {
+                    scriptSource = currentScript.src || window.location.href;   
+                    if (reportAccess(objName + '.' + method, scriptSource)) {
                         return originalMethod.apply(this, arguments);
                     } else {
                         console.log('Blocked access to method:', objName + '.' + method);
@@ -140,11 +137,9 @@ function injectMonitoringScript(threshold, entropies) {
                         const scripts = document.getElementsByTagName('script');
                         // Get the last script element (currently executing script)
                         const currentScript = scripts[scripts.length - 1];
-                        if (currentScript.src=""){
-                                    currentScript.src=window.location.href;
-                                }    
+                        scriptSource = currentScript.src || window.location.href;   
 
-                        if (reportAccess(objName + '.' + prop, currentScript.src)) {
+                        if (reportAccess(objName + '.' + prop, scriptSource)) {
                             return originalValue;
                         } else {
                             console.log('Blocked access to property:', objName + '.' + prop);
@@ -152,7 +147,7 @@ function injectMonitoringScript(threshold, entropies) {
                         }
                     },
                     set: function(value) {
-                        if (reportAccess(objName + '.' + prop, currentScript.src)) {
+                        if (reportAccess(objName + '.' + prop, scriptSource)) {
                             originalValue = value;
                         } else {
                             console.log('Blocked access to property:', objName + '.' + prop);
@@ -171,10 +166,8 @@ function injectMonitoringScript(threshold, entropies) {
                                 const scripts = document.getElementsByTagName('script');
                                 // Get the last script element (currently executing script)
                                 const currentScript = scripts[scripts.length - 1];
-                                if (currentScript.src=""){
-                                    currentScript.src=window.location.href;
-                                }                        
-                            if (reportAccess(objName + '.' + prop, currentScript.src)) {
+                                scriptSource = currentScript.src || window.location.href;                        
+                            if (reportAccess(objName + '.' + prop, scriptSource)) {
                                 return originalGetter.call(this);
                             } else {
                                 console.log('Blocked access to property:', objName + '.' + prop);
