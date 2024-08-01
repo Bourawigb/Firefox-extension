@@ -1,25 +1,116 @@
-console.log("Popup script loaded.");
-// popup.js
+document.addEventListener('DOMContentLoaded', function() {
+  const entropySlider = document.getElementById('entropy-slider');
+  const entropyValue = document.getElementById('entropy-value');
+  const randomProfileBtn = document.getElementById('random-profile');
+  const entropyBlockingBtn = document.getElementById('entropy-blocking-option');
+  const entropyControls = document.getElementById('entropy-controls');
+  const downloadLogsBtn = document.getElementById('download-logs');
+  const totalScripts = document.getElementById('total-scripts');
+  const firstPartyScripts = document.getElementById('first-party-scripts');
+  const thirdPartyScripts = document.getElementById('third-party-scripts');
 
-// popup.js
+  // Initialize entropy threshold
+  let currentThreshold = 0.5;
 
-document.addEventListener('DOMContentLoaded', function () {
-  var slider = document.getElementById('entropy-slider');
-  var output = document.getElementById('entropy-value');
-  
-  output.innerHTML = 'Entropy Threshold: ' + slider.value;
-
-  // Send the entropy threshold to background.js when slider value changes
-  slider.oninput = function() {
-    output.innerHTML = 'Entropy Threshold: ' + this.value;
-    browser.runtime.sendMessage({setEntropyThreshold: parseFloat(this.value)});
+  // Function to update entropy threshold
+  function updateEntropyThreshold(value) {
+    currentThreshold = value;
+    entropyValue.textContent = `Entropy Threshold: ${value}`;
+    // Send message to background script to update threshold
+    browser.runtime.sendMessage({ setEntropyThreshold: value });
   }
 
-  // Retrieve the entropy threshold from background.js when popup is opened
-  browser.runtime.sendMessage({getEntropyThreshold: true}).then(response => {
-    if (response && response.threshold) {
-      slider.value = response.threshold;
-      output.innerHTML = 'Entropy Threshold: ' + response.threshold;
+  // Entropy slider event listener
+  entropySlider.addEventListener('input', function() {
+    updateEntropyThreshold(this.value);
+  });
+
+  // Random Profile button click handler
+  randomProfileBtn.addEventListener('click', function() {
+    entropyControls.style.display = 'none';
+    console.log('Random Profile selected');
+    browser.runtime.sendMessage({ setMode: 'random' });
+    applyToAllTabs('applyRandomProfile');
+  });
+
+  // Entropy Blocking Option button click handler
+  entropyBlockingBtn.addEventListener('click', function() {
+    entropyControls.style.display = 'block';
+    browser.runtime.sendMessage({ setMode: 'entropy' });
+    applyToAllTabs('applyEntropyBlocking', { threshold: currentThreshold });
+  });
+
+  function applyToAllTabs(action, data = {}) {
+    browser.tabs.query({}, function(tabs) {
+      tabs.forEach(tab => {
+        browser.tabs.sendMessage(tab.id, { action, ...data });
+      });
+    });
+  }
+
+  // Download Logs button click handler
+  downloadLogsBtn.addEventListener('click', function() {
+    // Request logs from content script
+    browser.tabs.query({active: true, currentWindow: true}, function(tabs) {
+      browser.tabs.sendMessage(tabs[0].id, {action: "getLogs"}, function(response) {
+        if (response && response.logs) {
+          // Create and download the log file
+          const blob = new Blob([response.logs], {type: 'text/plain'});
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'fingerprinting_logs.txt';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }
+      });
+    });
+  });
+
+  // Function to update script counts
+  function updateScriptCounts(counts) {
+    totalScripts.textContent = counts.total;
+    firstPartyScripts.textContent = counts.firstParty;
+    thirdPartyScripts.textContent = counts.thirdParty;
+  }
+
+  // Request initial script counts from content script
+  browser.tabs.query({active: true, currentWindow: true}, function(tabs) {
+    browser.tabs.sendMessage(tabs[0].id, {action: "getScriptCounts"}, function(response) {
+      if (response && response.counts) {
+        updateScriptCounts(response.counts);
+      }
+    });
+  });
+
+  // Request initial entropy threshold and mode from background script
+  browser.runtime.sendMessage({ getEntropyThreshold: true }, function(response) {
+    if (response && response.threshold !== undefined) {
+      currentThreshold = response.threshold;
+      entropySlider.value = currentThreshold;
+      entropyValue.textContent = `Entropy Threshold: ${currentThreshold}`;
     }
   });
+<<<<<<< Updated upstream
+=======
+
+  browser.runtime.sendMessage({ getMode: true }, function(response) {
+    if (response && response.mode) {
+      if (response.mode === 'random') {
+        entropyControls.style.display = 'none';
+      } else {
+        entropyControls.style.display = 'block';
+      }
+    }
+  });
+
+  // Listen for updates from content script
+  browser.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+    if (request.action === "updateScriptCounts") {
+      updateScriptCounts(request.counts);
+    }
+  });
+>>>>>>> Stashed changes
 });

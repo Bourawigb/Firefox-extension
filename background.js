@@ -1,36 +1,58 @@
 console.log("background is loaded!");
 
+let entropyThreshold = 0.5; // Default value
+let currentMode = 'entropy'; // Default mode: 'entropy' or 'random'
+
 function getEntropyThreshold(callback) {
   browser.storage.local.get('entropyThreshold').then(data => {
     const threshold = data.entropyThreshold;
     if (threshold !== undefined) {
+      entropyThreshold = threshold;
       callback(threshold);
     } else {
-      callback(0.5); // Default threshold
+      callback(entropyThreshold);
     }
   });
 }
 
 function setEntropyThreshold(threshold) {
+  entropyThreshold = threshold;
   browser.storage.local.set({'entropyThreshold': threshold});
   console.log('New threshold value set:', threshold);
 }
 
+function setMode(mode) {
+  currentMode = mode;
+  browser.storage.local.set({'currentMode': mode});
+  console.log('New mode set:', mode);
+}
 
-let entropyThreshold = 0.5; // Default value
-
-function listenForAttributeAccess() {
-  browser.runtime.onMessage.addListener(function(message, sender, sendResponse) {
+function listenForMessages() {
+  browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.getEntropyThreshold) {
-      sendResponse({ threshold: entropyThreshold });
+      getEntropyThreshold(threshold => sendResponse({ threshold: threshold }));
+      return true; // Indicates that the response is sent asynchronously
     } else if (message.setEntropyThreshold) {
-      entropyThreshold = message.setEntropyThreshold;
-      setEntropyThreshold(entropyThreshold);
+      setEntropyThreshold(message.setEntropyThreshold);
+    } else if (message.setMode) {
+      setMode(message.setMode);
+    } else if (message.getMode) {
+      browser.storage.local.get('currentMode').then(data => {
+        sendResponse({ mode: data.currentMode || currentMode });
+      });
+      return true;
+    } else if (message.action === "updateScriptCounts") {
+      // Forward the script counts to the popup if it's open
+      browser.runtime.sendMessage(message);
     }
-       
   });
 }
 
+// Initialize mode from storage
+browser.storage.local.get('currentMode').then(data => {
+  if (data.currentMode) {
+    currentMode = data.currentMode;
+  }
+});
 
-
-listenForAttributeAccess();
+listenForMessages();
