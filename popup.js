@@ -93,8 +93,6 @@ document.addEventListener('DOMContentLoaded', function() {
       entropyValue.textContent = `Entropy Threshold: ${currentThreshold}`;
     }
   });
-<<<<<<< Updated upstream
-=======
 
   browser.runtime.sendMessage({ getMode: true }, function(response) {
     if (response && response.mode) {
@@ -112,5 +110,4 @@ document.addEventListener('DOMContentLoaded', function() {
       updateScriptCounts(request.counts);
     }
   });
->>>>>>> Stashed changes
 });
