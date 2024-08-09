@@ -14,25 +14,6 @@ function getCurrentMode() {
     });
   }
   
-
-// Function to read entropy data from CSV
-function readCSVData() {
-  return fetch("http://localhost:8000/Entropy.csv")
-    .then(response => response.text())
-    .then(data => {
-      const rows = data.split('\n');
-      rows.forEach(row => {
-        const columns = row.split(',');
-        const vector = columns[0].trim();
-        const entropy = parseFloat(columns[2]);
-        entropies[vector] = entropy;
-      });
-    })
-    .catch(error => {
-      console.error('Error reading CSV file:', error);
-    });
-}
-
 // Function to request entropy threshold from the background script
 function requestEntropyThreshold() {
   return new Promise((resolve, reject) => {
@@ -46,6 +27,20 @@ function requestEntropyThreshold() {
     });
   });
 }
+
+function getEntropyData() {
+  return new Promise((resolve, reject) => {
+    browser.storage.local.get('entropyData').then(data => {
+      if (data.entropyData) {
+        entropies = data.entropyData;
+        resolve();
+      } else {
+        reject('Failed to get entropy data from local storage');
+      }
+    });
+  });
+}
+
 
 // Function to inject the monitoring script
 function injectMonitoringScript(threshold, entropies) {
@@ -70,6 +65,7 @@ function injectMonitoringScript(threshold, entropies) {
             }
           }
         }
+        // activate the logNewVector function for the automatic crawler to get data in a file !
         logNewVector(normalizedAttributes);
         return 0.99;
       }
@@ -165,7 +161,7 @@ function injectMonitoringScript(threshold, entropies) {
       }
 
     function hookAllPropertieswebgl(obj, objName) {
-            const excludeProps = ['canvas', 'drawingBufferWidth', 'drawingBufferHeight', 'prototype'];
+            const excludeProps = ['canvas', 'drawingBufferWidth', 'drawingBufferHeight'];
             for (let prop in obj) {
                 if (!excludeProps.includes(prop) && typeof obj[prop] !== 'function') {
                 try {
@@ -196,7 +192,6 @@ function injectMonitoringScript(threshold, entropies) {
                 }
                 }
             }
-
             }
 
         hookAllProperties(screen, 'screen');
@@ -207,11 +202,12 @@ function injectMonitoringScript(threshold, entropies) {
         hookProperty(history, 'length', 'history');
         
         if (window.WebGLRenderingContext) {
-        hookAllPropertieswebgl(WebGLRenderingContext.prototype, 'WebGLRenderingContext');
+          hookAllPropertieswebgl(WebGLRenderingContext, 'WebGLRenderingContext');
         }
         if (window.WebGL2RenderingContext) {
-        hookAllPropertieswebgl(WebGL2RenderingContext.prototype, 'WebGL2RenderingContext');
+          hookAllPropertieswebgl(WebGL2RenderingContext, 'WebGL2RenderingContext');
         }
+
 
       if (window.BaseAudioContext) {
         hookProperty(BaseAudioContext.prototype, 'sampleRate', 'BaseAudioContext');
@@ -241,15 +237,19 @@ function injectMonitoringScript(threshold, entropies) {
 
 // Main function to orchestrate the order of execution
 async function main() {
-    await readCSVData();
+  try {
+    await getEntropyData();
     const mode = await getCurrentMode();
+    await requestEntropyThreshold();
     if (mode === 'entropy') {
-      await requestEntropyThreshold();
       injectMonitoringScript(entropyThreshold, entropies);
     } else if (mode === 'random') {
       applyRandomProfile();
     }
+  } catch (error) {
+    console.error('Error in main function:', error);
   }
+}
 
 function applyRandomProfile() {
     // Implement your random profile logic here
@@ -261,7 +261,7 @@ function applyRandomProfile() {
   
   function generateRandomProfile() {
     // Generate and return a random profile
-    // This is just an example, adjust according to your needs
+    // This is just an example,we adjust according to needs
     return {
       userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
       screenWidth: Math.floor(Math.random() * (1920 - 1024 + 1)) + 1024,
@@ -307,7 +307,6 @@ function updateScriptCounts(scriptSource) {
     browser.runtime.sendMessage({ action: "updateScriptCounts", counts: scriptCounts });
   }
 }
-
 // Listen for messages from the popup
 browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === "applyRandomProfile") {

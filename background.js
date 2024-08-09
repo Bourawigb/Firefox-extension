@@ -2,6 +2,38 @@ console.log("background is loaded!");
 
 let entropyThreshold = 0.5; // Default value
 let currentMode = 'entropy'; // Default mode: 'entropy' or 'random'
+let entropies = {};
+
+
+// Function to read entropy data from CSV
+function readCSVData() {
+  return fetch(browser.runtime.getURL("./data/Entropy.csv"))
+    .then(response => response.text())
+    .then(data => {
+      const rows = data.split('\n');
+      rows.forEach(row => {
+        const columns = row.split(',');
+        const vector = columns[0].trim();
+        const entropy = parseFloat(columns[2]);
+        entropies[vector] = entropy;
+      });
+      console.log("Entropy data loaded successfully");
+      // Store entropy data in local storage
+      browser.storage.local.set({ entropyData: entropies });
+    })
+    .catch(error => {
+      console.error('Error reading CSV file:', error);
+    });
+}
+
+// Load entropy data when the background script starts
+readCSVData().then(() => {
+  console.log("Entropy data loaded and ready to be sent to content scripts");
+});
+
+
+
+
 
 function getEntropyThreshold(callback) {
   browser.storage.local.get('entropyThreshold').then(data => {
@@ -27,11 +59,14 @@ function setMode(mode) {
   console.log('New mode set:', mode);
 }
 
+
+
+
 function listenForMessages() {
   browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.getEntropyThreshold) {
       getEntropyThreshold(threshold => sendResponse({ threshold: threshold }));
-      return true; // Indicates that the response is sent asynchronously
+      return true;
     } else if (message.setEntropyThreshold) {
       setEntropyThreshold(message.setEntropyThreshold);
     } else if (message.setMode) {
@@ -42,8 +77,10 @@ function listenForMessages() {
       });
       return true;
     } else if (message.action === "updateScriptCounts") {
-      // Forward the script counts to the popup if it's open
       browser.runtime.sendMessage(message);
+    } else if (message.getEntropyData) {
+      sendResponse({ entropies: entropies });
+      return true;
     }
   });
 }
