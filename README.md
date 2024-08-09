@@ -18,7 +18,7 @@ To install the Trackers Blocker extension in Firefox, follow these steps:
 1. **Clone the Repository**:
    Clone this repository to your local machine using the following command:
    ```bash
-   git clone https://github.com/yourusername/trackers-blocker.git
+   git clone https://github.com/Bourawigb/Firefox-extension.git
 2. **Open Firefox**:
     Launch the Firefox browser.
     Navigate to the Add-ons Debugging Page:
