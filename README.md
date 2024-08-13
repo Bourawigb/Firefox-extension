@@ -36,3 +36,7 @@ To install the Trackers Blocker extension in Firefox, follow these steps:
 ***Download Logs***: Click the "Download Logs" button to save a text file containing logs of fingerprinting attempts.
 Contributing
 Contributions are welcome! If you have suggestions for improvements or new features, feel free to create an issue or submit a pull request.
+![alt text](image.png)
+![alt text](image-1.png)
+![alt text](image-2.png)
+![alt text](image-3.png)
