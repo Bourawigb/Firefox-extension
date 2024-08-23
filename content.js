@@ -49,8 +49,8 @@ function injectMonitoringScript(threshold, entropies) {
       let entropyValues = ${JSON.stringify(entropies)};
       let entropyThreshold = ${threshold};
       let attributeAccessData = {};
-      console.log("Entropy values:", entropyValues);
-      console.log("Entropy threshold:", entropyThreshold);
+      //console.log("Entropy values:", entropyValues);
+      //console.log("Entropy threshold:", entropyThreshold);
 
       function calculateVectorEntropy(attributes) {
         function normalizeVector(vector) {
@@ -66,8 +66,8 @@ function injectMonitoringScript(threshold, entropies) {
           }
         }
         // activate the logNewVector function for the automatic crawler to get data in a file !
-        logNewVector(normalizedAttributes);
-        return 0.99;
+        //logNewVector(normalizedAttributes);
+        return 0.99; //change this to 0 (if the vector is unknown in our database 0.99 is blocking all unkown vectors)
       }
 
       function logNewVector(vector) {
@@ -90,7 +90,7 @@ function injectMonitoringScript(threshold, entropies) {
           attributeAccessData[scriptSource].add(attribute);
           const attributes = Array.from(attributeAccessData[scriptSource]);
           const vectorEntropy = calculateVectorEntropy(attributes);
-          console.log('Vector ', attributes.join("|"), ' entropy for', scriptSource, 'is:', vectorEntropy, ' and its:', entropyValues[attributes.join("|")]);
+         // console.log('Vector ', attributes.join("|"), ' entropy for', scriptSource, 'is:', vectorEntropy, ' and its:', entropyValues[attributes.join("|")]);
           allowAccess = vectorEntropy <= entropyThreshold;
           
           // Log the access attempt
@@ -100,10 +100,10 @@ function injectMonitoringScript(threshold, entropies) {
           }, '*');
           
           if (allowAccess) {
-            console.log('Access allowed for attribute:', attribute, 'from script:', scriptSource);
+           // console.log('Access allowed for attribute:', attribute, 'from script:', scriptSource);
             return true;
           } else {
-            console.log('Access denied for attribute:', attribute, 'from script:', scriptSource);
+           // console.log('Access denied for attribute:', attribute, 'from script:', scriptSource);
             return false;
           }
         }
@@ -119,7 +119,7 @@ function injectMonitoringScript(threshold, entropies) {
           if (reportAccess(objName + '.' + method, scriptSource)) {
             return originalMethod.apply(this, arguments);
           } else {
-            console.log('Blocked access to method:', objName + '.' + method);
+           // console.log('Blocked access to method:', objName + '.' + method);
           }
         };
       }
@@ -134,7 +134,6 @@ function injectMonitoringScript(threshold, entropies) {
             if (reportAccess(objName + '.' + prop, scriptSource)) {
               return originalValue;
             } else {
-              console.log('Blocked access to property:', objName + '.' + prop);
               return undefined;
             }
           },
@@ -144,8 +143,6 @@ function injectMonitoringScript(threshold, entropies) {
             const scriptSource = currentScript ? (currentScript.src || window.location.href) : window.location.href;
             if (reportAccess(objName + '.' + prop, scriptSource)) {
               originalValue = value;
-            } else {
-              console.log('Blocked setting property:', objName + '.' + prop);
             }
           },
           configurable: true
@@ -178,7 +175,6 @@ function injectMonitoringScript(threshold, entropies) {
                             if (reportAccess(objName + '.' + prop, scriptSource)) {
                             return originalGetter.call(this);
                             } else {
-                            console.log('Blocked access to WebGL property:', objName + '.' + prop);
                             return undefined;
                             }
                         }
@@ -200,7 +196,12 @@ function injectMonitoringScript(threshold, entropies) {
 
         // Hook history.length
         hookProperty(history, 'length', 'history');
-        
+        hookProperty(WebGLShaderPrecisionFormat.prototype, 'precision', 'WebGLShaderPrecisionFormat');
+        hookProperty(WebGLShaderPrecisionFormat.prototype, 'rangeMax', 'WebGLShaderPrecisionFormat');
+        hookProperty(WebGLShaderPrecisionFormat.prototype, 'rangeMin', 'WebGLShaderPrecisionFormat');
+
+
+
         if (window.WebGLRenderingContext) {
           hookAllPropertieswebgl(WebGLRenderingContext, 'WebGLRenderingContext');
         }

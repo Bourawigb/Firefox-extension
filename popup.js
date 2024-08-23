@@ -14,10 +14,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Function to update entropy threshold
   function updateEntropyThreshold(value) {
-    currentThreshold = value;
-    entropyValue.textContent = `Entropy Threshold: ${value}`;
-    // Send message to background script to update threshold
-    browser.runtime.sendMessage({ setEntropyThreshold: value });
+    currentThreshold = 1 - value; // Invert the value
+    let blockingLevel = "Medium";
+    if (value <= 0.442) blockingLevel = "Negligible";
+    else if (value <= 0.596) blockingLevel = "Low";
+    else if (value <= 0.705) blockingLevel = "Medium";
+    else if (value <= 0.832) blockingLevel = "High";
+    else blockingLevel = "Very High";
+    
+    entropyValue.textContent = `Blocking Level: ${value} - ${blockingLevel}`;
+    browser.runtime.sendMessage({ setEntropyThreshold: currentThreshold });
   }
 
   // Entropy slider event listener
@@ -75,6 +81,7 @@ document.addEventListener('DOMContentLoaded', function() {
     firstPartyScripts.textContent = counts.firstParty;
     thirdPartyScripts.textContent = counts.thirdParty;
   }
+
 
   // Request initial script counts from content script
   browser.tabs.query({active: true, currentWindow: true}, function(tabs) {

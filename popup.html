@@ -2,9 +2,7 @@
 <html>
 <head>
   <title>Trackers Blocker</title>
-  <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="./src/bootstrap.min.css">
-  <!-- Custom Styles -->
   <style>
     body {
       padding: 20px;
@@ -27,10 +25,10 @@
       font-weight: bold;
     }
     .first-party {
-      color: #007bff; /* Bootstrap Primary color */
+      color: #007bff;
     }
     .third-party {
-      color: #ffc107; /* Bootstrap Warning color */
+      color: #ffc107;
     }
     #download-logs {
       margin-top: 15px;
@@ -49,18 +47,17 @@
     <div id="entropy-controls" class="alert alert-info" style="display: none;">
       <p><strong>Entropy Threshold Notes:</strong></p>
       <ul>
-        <li>0: Block all</li>
-        <li>0.1: Very high</li>
-        <li>0.25: High</li>
-        <li>0.5: Medium</li>
-        <li>0.75: Low</li>
-        <li>0.9: Very low</li>
-        <li>1: Allow all</li>
+        <li>0: Allow all</li>
+        <li>0.442: Blocking negligible</li>
+        <li>0.596: Blocking low</li>
+        <li>0.705: Blocking medium</li>
+        <li>0.832: Blocking high</li>
+        <li>1: Block all</li>
       </ul>
       <div class="form-group">
-        <label for="entropy-slider">Select Entropy Threshold:</label>
-        <input type="range" min="0" max="1" step="0.1" value="0.5" id="entropy-slider" class="form-control-range">
-        <p id="entropy-value" class="mt-2">Entropy Threshold: 0.5</p>
+        <label for="entropy-slider">Select Blocking Level:</label>
+        <input type="range" min="0" max="1" step="0.01" value="0.5" id="entropy-slider" class="form-control-range">
+        <p id="entropy-value" class="mt-2">Blocking Level: Medium</p>
       </div>
     </div>
 
@@ -75,11 +72,9 @@
     </div>
   </div>
 
-  <!-- Bootstrap JS and dependencies -->
   <script src="./src/jquery-3.5.1.slim.min.js"></script>
   <script src="./src/popper.min.js"></script>
   <script src="./src/bootstrap.min.js"></script>
-  <!-- Custom Script -->
   <script src="popup.js"></script>
 </body>
 </html>
