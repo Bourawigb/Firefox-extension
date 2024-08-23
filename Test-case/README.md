@@ -60,5 +60,5 @@ This script automates the process of visiting multiple websites using Firefox wi
 - To handle specific websites differently, you can add conditional logic within the `for` loop that visits each link.
 
 ## Note
-
+Don't forget to uncomment the LognewVector function in content.js and to lunch server.py with ```python server.py```
 This script is designed for testing purposes. Be mindful of the websites you're visiting and respect their terms of service .
