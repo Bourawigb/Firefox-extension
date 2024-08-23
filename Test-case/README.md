@@ -6,7 +6,7 @@ This script automates the process of visiting multiple websites using Firefox wi
 
 - Python 3.x installed on your system
 - Selenium WebDriver for Python (`pip install selenium`)
-- Firefox browser installed
+- Firefox Developer editon browser installed
 - GeckoDriver executable (Firefox WebDriver)
 
 ## Setup
@@ -21,8 +21,10 @@ This script automates the process of visiting multiple websites using Firefox wi
 3. Create a Firefox profile with your extension installed:
 - Open Firefox and go to `about:profiles`
 - Create a new profile
-- Install your extension in this profile
+- Install your extension in this profile (zip all files)
 - Note down the path to this profile (you can find it in `about:profiles`)
+- usually in linux it's in : /home/user/.mozilla/firefox/profile-name...
+- in windows : you find it in : %appdata%/Mozilla/profiles/....
 
 4. Prepare a text file with a list of URLs to visit, one per line.
 
@@ -62,3 +64,9 @@ This script automates the process of visiting multiple websites using Firefox wi
 ## Note
 Don't forget to uncomment the LognewVector function in content.js and to lunch server.py with ```python server.py```
 This script is designed for testing purposes. Be mindful of the websites you're visiting and respect their terms of service .
+
+![alt text](image.png)
+![alt text](image-1.png)
+![alt text](image-2.png)
+![alt text](image-3.png)
+![alt text](image-4.png)
