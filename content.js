@@ -52,7 +52,7 @@ function injectMonitoringScript(threshold, entropies) {
       //console.log("Entropy values:", entropyValues);
       //console.log("Entropy threshold:", entropyThreshold);
 
-      function calculateVectorEntropy(attributes) {
+      function calculateVectorEntropy(attributes,scriptSource) {
         function normalizeVector(vector) {
           return vector.split('|').map(attr => attr.trim()).sort().join('|');
         }
@@ -66,12 +66,12 @@ function injectMonitoringScript(threshold, entropies) {
           }
         }
         // activate the logNewVector function for the automatic crawler to get data in a file !
-        //logNewVector(normalizedAttributes);
+        //logNewVector(normalizedAttributes,scriptSource);
         return 0.99; //change this to 0 (if the vector is unknown in our database 0.99 is blocking all unkown vectors)
       }
 
       function logNewVector(vector) {
-        const logEntry = vector + '\\n';
+        const logEntry = vector + ' : ' + scriptSource + '\\n';
         fetch('http://localhost:8000/Logvectors.txt', {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain' },
@@ -89,7 +89,7 @@ function injectMonitoringScript(threshold, entropies) {
           }
           attributeAccessData[scriptSource].add(attribute);
           const attributes = Array.from(attributeAccessData[scriptSource]);
-          const vectorEntropy = calculateVectorEntropy(attributes);
+          const vectorEntropy = calculateVectorEntropy(attributes,scriptSource);
          // console.log('Vector ', attributes.join("|"), ' entropy for', scriptSource, 'is:', vectorEntropy, ' and its:', entropyValues[attributes.join("|")]);
           allowAccess = vectorEntropy <= entropyThreshold;
           
