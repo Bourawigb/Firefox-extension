@@ -6,7 +6,7 @@ This script automates the process of visiting multiple websites using Firefox wi
 
 - Python 3.x installed on your system
 - Selenium WebDriver for Python (`pip install selenium`)
-- Firefox Developer editon browser installed
+- Firefox Developer edition browser installed
 - GeckoDriver executable (Firefox WebDriver)
 
 ## Setup
@@ -19,8 +19,26 @@ This script automates the process of visiting multiple websites using Firefox wi
 2. Download GeckoDriver from [Mozilla's GitHub repository](https://github.com/mozilla/geckodriver/releases) and place it in a known location on your system (choose the right executable for your OS).
 
 3. Create a Firefox profile with your extension installed:
-- Open Firefox and go to `about:profiles`
-- Create a new profile
+- Open Firefox developer edition and go to `about:profiles`
+- Create a new profile ( or use the default one)
+----
+There is 2 methods to enable adding the extension :
+First one :
+- Access the Configuration Settings:
+- Type about:config in the address bar and press Enter.
+- You’ll see a warning about potentially voiding your warranty. Click on "Accept the Risk and Continue."
+  Disable Signature Requirement:
+- In the search bar on the about:config page, type xpinstall.signatures.required.
+- Double-click on the xpinstall.signatures.required preference to set it to false.
+Second one :
+- Go to your Firefox profile directory (usually located at ~/.mozilla/firefox/ on Linux or %APPDATA%\Mozilla\Firefox\Profiles\ on Windows).
+- Create a file named user.js.
+- Add the following line to user.js:
+```bash
+user_pref("xpinstall.signatures.required", false);
+```
+----
+
 - Install your extension in this profile (zip all files)
 - Note down the path to this profile (you can find it in `about:profiles`)
 - usually in linux it's in : /home/user/.mozilla/firefox/profile-name...
