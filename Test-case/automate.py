@@ -4,12 +4,6 @@ from selenium.webdriver.firefox.options import Options
 from selenium.common.exceptions import WebDriverException
 import time
 
-# Path to the Firefox profile with your temporary extension installed
-#firefox_profile_path = r'C:\\Users\\boura\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\9u7ww9zy.dev-edition-default'
-
-# Path to the geckodriver executable
-#geckodriver_path = r'C:\\Users\\boura\\OneDrive\\Documents\\geckodriver.exe'
-
 # Function to read links from a text file
 def read_links(file_path):
     with open(file_path, 'r') as file:
@@ -25,7 +19,7 @@ def open_links_in_firefox(links, firefox_profile_path, geckodriver_path):
     # Set up Firefox options with the profile
     options = Options()
     options.profile = firefox_profile_path
-
+    options.binary_location = r'/usr/local/bin/firefox-developer' #Adjust if the path is different !
     # Start Firefox with the specified profile
     service = Service(executable_path=geckodriver_path)
     driver = webdriver.Firefox(service=service, options=options)
@@ -57,8 +51,3 @@ if __name__ == "__main__":
 
     # Open links in Firefox using the specified profile and geckodriver
     open_links_in_firefox(links, firefox_profile_path, geckodriver_path)
-
-
-#if __name__ == "__main__":
-#   links = read_links(r'C:\\Users\\boura\\OneDrive\\Documents\\GitHub\\projet backend\\Firefox-extension\\Test-case\\tranco-top-1M.txt')  # Use raw string for the file path
-#    open_links_in_firefox(links)

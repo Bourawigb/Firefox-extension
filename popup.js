@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Request initial entropy threshold and mode from background script
   browser.runtime.sendMessage({ getEntropyThreshold: true }, function(response) {
     if (response && response.threshold !== undefined) {
-      currentThreshold = response.threshold;
+      currentThreshold = 1 - response.threshold;
       entropySlider.value = currentThreshold;
       entropyValue.textContent = `Entropy Threshold: ${currentThreshold}`;
     }
