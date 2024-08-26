@@ -19,6 +19,7 @@ def open_links_in_firefox(links, firefox_profile_path, geckodriver_path):
     # Set up Firefox options with the profile
     options = Options()
     options.profile = firefox_profile_path
+    options.add_argument("--headless")
     options.binary_location = r'/usr/local/bin/firefox-developer' #Adjust if the path is different !
     # Start Firefox with the specified profile
     service = Service(executable_path=geckodriver_path)
